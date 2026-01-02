@@ -1,0 +1,206 @@
+oauth2-proxy-1  | [2026/01/02 05:25:04] [provider.go:55] Performing OIDC Discovery...
+oauth2-proxy-1  | [2026/01/02 05:25:05] [providers.go:146] Warning: Your provider supports PKCE methods ["S256"], but you have not enabled one with --code-challenge-method
+oauth2-proxy-1  | [2026/01/02 05:25:05] [proxy.go:89] mapping path "/" => upstream "http://papermerge:80"
+oauth2-proxy-1  | [2026/01/02 05:25:05] [oauthproxy.go:172] OAuthProxy configured for OpenID Connect Client ID: 353636209450346660
+oauth2-proxy-1  | [2026/01/02 05:25:05] [oauthproxy.go:178] Cookie settings: name:_oauth2_proxy secure(https):false httponly:true expiry:168h0m0s domains: path:/ samesite: refresh:disabled
+papermerge-1    | Running database migrations...
+papermerge-1    | INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+papermerge-1    | INFO  [alembic.runtime.migration] Will assume transactional DDL.
+papermerge-1    | Migrations complete.
+papermerge-1    | Syncing permissions...
+postgres-1      | 
+papermerge-1    | Permissions sync complete.
+postgres-1      | PostgreSQL Database directory appears to contain a database; Skipping initialization
+postgres-1      | 
+postgres-1      | 2026-01-02 05:24:54.132 UTC [1] LOG:  starting PostgreSQL 17.6 (Debian 17.6-1.pgdg13+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit
+papermerge-1    | WARNING:papermerge.core.features.audit.db.audit_context:Session is not usable, skipping audit context cleanup
+postgres-1      | 2026-01-02 05:24:54.132 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+papermerge-1    | System user already exists
+papermerge-1    | Creating standard roles...
+papermerge-1    | ✓ Role 'admin' ready with all permissions
+papermerge-1    | ✓ Role 'user' ready with document management permissions
+postgres-1      | 2026-01-02 05:24:54.132 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+postgres-1      | 2026-01-02 05:24:54.133 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+papermerge-1    | ✓ Role 'viewer' ready with read-only permissions
+postgres-1      | 2026-01-02 05:24:54.135 UTC [29] LOG:  database system was shut down at 2026-01-02 05:23:53 UTC
+papermerge-1    | Standard roles ready.
+postgres-1      | 2026-01-02 05:24:54.138 UTC [1] LOG:  database system is ready to accept connections
+papermerge-1    | 2026-01-02 05:25:19,149 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+postgres-1      | 2026-01-02 05:25:15.245 UTC [53] ERROR:  duplicate key value violates unique constraint "users_pkey"
+papermerge-1    | 2026-01-02 05:25:19,152 INFO RPC interface 'supervisor' initialized
+postgres-1      | 2026-01-02 05:25:15.245 UTC [53] DETAIL:  Key (id)=(00000000-0000-0000-0000-000000000000) already exists.
+postgres-1      | 2026-01-02 05:25:15.245 UTC [53] STATEMENT:  INSERT INTO users (id, username, email, password, first_name, last_name, is_superuser, is_staff, is_active, created_at, updated_at, deleted_at, archived_at, created_by, updated_by, deleted_by, archived_by, date_joined) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::BOOLEAN, $8::BOOLEAN, $9::BOOLEAN, $10::TIMESTAMP WITH TIME ZONE, $11::TIMESTAMP WITH TIME ZONE, $12::TIMESTAMP WITH TIME ZONE, $13::TIMESTAMP WITH TIME ZONE, $14::UUID, $15::UUID, $16::UUID, $17::UUID, now()) RETURNING users.date_joined
+papermerge-1    | 2026-01-02 05:25:19,152 CRIT Server 'inet_http_server' running without any HTTP authentication checking
+papermerge-1    | 2026-01-02 05:25:19,152 INFO supervisord started with pid 1
+papermerge-1    | 2026-01-02 05:25:20,156 INFO spawned: 'core' with pid 23
+papermerge-1    | 2026-01-02 05:25:20,158 INFO spawned: 'nginx' with pid 24
+papermerge-1    | 2026/01/02 05:25:20 [notice] 24#24: using the "epoll" event method
+papermerge-1    | 2026/01/02 05:25:20 [notice] 24#24: nginx/1.28.0
+papermerge-1    | 2026/01/02 05:25:20 [notice] 24#24: OS: Linux 6.8.0-90-generic
+papermerge-1    | 2026/01/02 05:25:20 [notice] 24#24: getrlimit(RLIMIT_NOFILE): 1048576:1048576
+papermerge-1    | 2026/01/02 05:25:20 [notice] 24#24: start worker processes
+papermerge-1    | 2026/01/02 05:25:20 [notice] 24#24: start worker process 25
+papermerge-1    | INFO 2026-01-02 05:25:20,904 config Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+papermerge-1    | INFO 2026-01-02 05:25:20,904 multiprocess Started parent process [23]
+papermerge-1    | 2026-01-02 05:25:21,905 INFO success: core entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+papermerge-1    | 2026-01-02 05:25:21,905 INFO success: nginx entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+papermerge-1    | DEBUG 2026-01-02 05:25:24,484 papermerge.core.router_loader:discover_routers: Searching for router for api_tokens
+papermerge-1    | DEBUG 2026-01-02 05:25:24,497 papermerge.core.router_loader:discover_routers: Searching for router for audit
+papermerge-1    | DEBUG 2026-01-02 05:25:24,511 papermerge.core.router_loader:discover_routers: Searching for router for api_tokens
+papermerge-1    | DEBUG 2026-01-02 05:25:24,523 papermerge.core.router_loader:discover_routers: Searching for router for audit
+papermerge-1    | DEBUG 2026-01-02 05:25:24,534 papermerge.core.router_loader:discover_routers: Searching for router for auth
+papermerge-1    | DEBUG 2026-01-02 05:25:24,535 papermerge.core.router_loader:discover_routers: No module named 'papermerge.core.features.auth.router'
+papermerge-1    | DEBUG 2026-01-02 05:25:24,535 papermerge.core.router_loader:discover_routers: Searching for router for custom_fields
+papermerge-1    | DEBUG 2026-01-02 05:25:24,548 papermerge.core.router_loader:discover_routers: Searching for router for document
+papermerge-1    | DEBUG 2026-01-02 05:25:24,561 papermerge.core.router_loader:discover_routers: Searching for router for auth
+papermerge-1    | DEBUG 2026-01-02 05:25:24,561 papermerge.core.router_loader:discover_routers: No module named 'papermerge.core.features.auth.router'
+papermerge-1    | DEBUG 2026-01-02 05:25:24,561 papermerge.core.router_loader:discover_routers: Searching for router for custom_fields
+papermerge-1    | DEBUG 2026-01-02 05:25:24,574 papermerge.core.router_loader:discover_routers: Searching for router for document
+papermerge-1    | DEBUG 2026-01-02 05:25:24,584 papermerge.core.router_loader:discover_routers: Searching for router for document_types
+papermerge-1    | DEBUG 2026-01-02 05:25:24,595 papermerge.core.router_loader:discover_routers: Searching for router for groups
+papermerge-1    | DEBUG 2026-01-02 05:25:24,605 papermerge.core.router_loader:discover_routers: Searching for router for liveness_probe
+papermerge-1    | DEBUG 2026-01-02 05:25:24,606 papermerge.core.router_loader:discover_routers: Searching for router for nodes
+papermerge-1    | DEBUG 2026-01-02 05:25:24,610 papermerge.core.router_loader:discover_routers: Searching for router for document_types
+papermerge-1    | DEBUG 2026-01-02 05:25:24,621 papermerge.core.router_loader:discover_routers: Searching for router for groups
+papermerge-1    | DEBUG 2026-01-02 05:25:24,631 papermerge.core.router_loader:discover_routers: Searching for router for liveness_probe
+papermerge-1    | DEBUG 2026-01-02 05:25:24,632 papermerge.core.router_loader:discover_routers: Searching for router for nodes
+papermerge-1    | DEBUG 2026-01-02 05:25:24,635 papermerge.core.router_loader:discover_routers: Searching for router for ownership
+papermerge-1    | DEBUG 2026-01-02 05:25:24,635 papermerge.core.router_loader:discover_routers: No module named 'papermerge.core.features.ownership.router'
+papermerge-1    | DEBUG 2026-01-02 05:25:24,635 papermerge.core.router_loader:discover_routers: Searching for router for page_mngm
+papermerge-1    | DEBUG 2026-01-02 05:25:24,636 papermerge.core.router_loader:discover_routers: No module named 'papermerge.core.features.page_mngm.router'
+papermerge-1    | DEBUG 2026-01-02 05:25:24,636 papermerge.core.router_loader:discover_routers: Searching for router for preferences
+papermerge-1    | DEBUG 2026-01-02 05:25:24,657 papermerge.core.router_loader:discover_routers: Searching for router for roles
+papermerge-1    | DEBUG 2026-01-02 05:25:24,661 papermerge.core.router_loader:discover_routers: Searching for router for ownership
+papermerge-1    | DEBUG 2026-01-02 05:25:24,662 papermerge.core.router_loader:discover_routers: No module named 'papermerge.core.features.ownership.router'
+papermerge-1    | DEBUG 2026-01-02 05:25:24,662 papermerge.core.router_loader:discover_routers: Searching for router for page_mngm
+papermerge-1    | DEBUG 2026-01-02 05:25:24,662 papermerge.core.router_loader:discover_routers: No module named 'papermerge.core.features.page_mngm.router'
+papermerge-1    | DEBUG 2026-01-02 05:25:24,662 papermerge.core.router_loader:discover_routers: Searching for router for preferences
+papermerge-1    | DEBUG 2026-01-02 05:25:24,675 papermerge.core.router_loader:discover_routers: Searching for router for search
+papermerge-1    | DEBUG 2026-01-02 05:25:24,677 papermerge.core.router_loader:discover_routers: Searching for router for shared_nodes
+papermerge-1    | DEBUG 2026-01-02 05:25:24,683 papermerge.core.router_loader:discover_routers: Searching for router for roles
+papermerge-1    | DEBUG 2026-01-02 05:25:24,685 papermerge.core.router_loader:discover_routers: Searching for router for special_folders
+papermerge-1    | DEBUG 2026-01-02 05:25:24,685 papermerge.core.router_loader:discover_routers: No module named 'papermerge.core.features.special_folders.router'
+papermerge-1    | DEBUG 2026-01-02 05:25:24,685 papermerge.core.router_loader:discover_routers: Searching for router for tags
+papermerge-1    | DEBUG 2026-01-02 05:25:24,699 papermerge.core.router_loader:discover_routers: Searching for router for search
+papermerge-1    | DEBUG 2026-01-02 05:25:24,701 papermerge.core.router_loader:discover_routers: Searching for router for shared_nodes
+papermerge-1    | DEBUG 2026-01-02 05:25:24,709 papermerge.core.router_loader:discover_routers: Searching for router for special_folders
+papermerge-1    | DEBUG 2026-01-02 05:25:24,709 papermerge.core.router_loader:discover_routers: No module named 'papermerge.core.features.special_folders.router'
+papermerge-1    | DEBUG 2026-01-02 05:25:24,709 papermerge.core.router_loader:discover_routers: Searching for router for tags
+papermerge-1    | DEBUG 2026-01-02 05:25:24,711 papermerge.core.router_loader:discover_routers: Searching for router for tasks
+papermerge-1    | DEBUG 2026-01-02 05:25:24,713 papermerge.core.router_loader:discover_routers: Searching for router for users
+papermerge-1    | DEBUG 2026-01-02 05:25:24,734 papermerge.core.router_loader:discover_routers: Searching for router for tasks
+papermerge-1    | DEBUG 2026-01-02 05:25:24,737 papermerge.core.router_loader:discover_routers: Searching for router for users
+papermerge-1    | INFO 2026-01-02 05:25:24,846 server Started server process [28]
+papermerge-1    | INFO 2026-01-02 05:25:24,846 on Waiting for application startup.
+papermerge-1    | INFO 2026-01-02 05:25:24,846 on Application startup complete.
+papermerge-1    | INFO 2026-01-02 05:25:24,868 server Started server process [27]
+papermerge-1    | INFO 2026-01-02 05:25:24,868 on Waiting for application startup.
+papermerge-1    | INFO 2026-01-02 05:25:24,868 on Application startup complete.
+oauth2-proxy-1  | [2026/01/02 05:25:56] [oauthproxy.go:1024] No valid authentication in request. Initiating login.
+oauth2-proxy-1  | 172.29.0.1:46788 - 9a5bac63-98ba-4497-a557-4455a9477dc3 - - [2026/01/02 05:25:56] localhost:8080 GET - "/" HTTP/1.1 "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36" 302 318 0.000
+oauth2-proxy-1  | [2026/01/02 05:25:56] [oauthproxy.go:1024] No valid authentication in request. Initiating login.
+oauth2-proxy-1  | 172.29.0.1:46788 - 1d002e8f-6e0f-4bd8-9bc1-cbaa2e470c18 - - [2026/01/02 05:25:56] localhost:8080 GET - "/" HTTP/1.1 "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36" 302 318 0.000
+oauth2-proxy-1  | 172.29.0.1:46788 - 423db982-b4c9-4936-81c9-274a875f8493 - 353632285595638925 [2026/01/02 05:26:20] [AuthSuccess] Authenticated via OAuth2: Session{email:353632285595638925 user:353632285595638925 PreferredUsername:eugen@paper.us1.zitadel.cloud token:true id_token:true created:2026-01-02 05:26:20.241075571 +0000 UTC m=+75.357346299 expires:2026-01-02 17:26:18.807790602 +0000 UTC m=+43273.924061336}
+oauth2-proxy-1  | 172.29.0.1:46788 - 423db982-b4c9-4936-81c9-274a875f8493 - - [2026/01/02 05:26:19] localhost:8080 GET - "/oauth2/callback?code=pUA0d53eW7TdvuO25ZLVfqcJpNM9eKrAEOxHWIlirA_-gR7vww&state=JfaBgdech52CfiQsO749LarmyipagfIb78dYLes7gFI%3A%2F" HTTP/1.1 "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36" 302 24 0.593
+oauth2-proxy-1  | 172.29.0.1:46788 - f51129bb-83a1-4fc3-bb98-44bbb891c2e4 - 353632285595638925 [2026/01/02 05:26:20] localhost:8080 GET / "/" HTTP/1.1 "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36" 200 541 0.003
+papermerge-1    | 172.29.0.4 - - [02/Jan/2026:05:26:20 +0000] "GET / HTTP/1.1" 200 541 "https://pm36dev-scju2o.us1.zitadel.cloud/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+papermerge-1    | 172.29.0.4 - - [02/Jan/2026:05:26:20 +0000] "GET /papermerge-runtime-config.js HTTP/1.1" 200 347 "http://localhost:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+oauth2-proxy-1  | 172.29.0.1:46788 - 6137003a-0965-4301-9d41-0b0b5d854e09 - 353632285595638925 [2026/01/02 05:26:20] localhost:8080 GET / "/papermerge-runtime-config.js" HTTP/1.1 "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36" 200 347 0.001
+oauth2-proxy-1  | 172.29.0.1:52312 - e6b88894-8b93-472d-bbf4-6a3754a13925 - 353632285595638925 [2026/01/02 05:26:20] localhost:8080 GET / "/assets/index-dA14Nxzb.css" HTTP/1.1 "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36" 200 236501 0.001
+papermerge-1    | 172.29.0.4 - - [02/Jan/2026:05:26:20 +0000] "GET /assets/index-dA14Nxzb.css HTTP/1.1" 200 236501 "http://localhost:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+papermerge-1    | 172.29.0.4 - - [02/Jan/2026:05:26:20 +0000] "GET /assets/index-p574VYWC.js HTTP/1.1" 200 1733890 "http://localhost:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+oauth2-proxy-1  | 172.29.0.1:52324 - 96d89dbf-3e1d-4a7a-a1d7-7494cc40bb9b - 353632285595638925 [2026/01/02 05:26:20] localhost:8080 GET / "/assets/index-p574VYWC.js" HTTP/1.1 "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36" 200 1733890 0.002
+papermerge-1    | DEBUG 2026-01-02 05:26:20,345 papermerge.core.features.auth:get_current_user: get_current_user called: token=present, remote_user=None
+papermerge-1    | DEBUG 2026-01-02 05:26:20,345 papermerge.core.features.auth:get_current_user: Request headers: {'host': 'localhost', 'x-real-ip': '172.29.0.4', 'x-forwarded-for': '172.29.0.1, 172.29.0.4', 'x-forwarded-proto': 'http', 'authorization': 'Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6IjM1MzYzMjI4NjE4MjM4MjczMyIsInR5cCI6IkpXVCJ9.eyJhdWQiOlsiMzUzNjM2MjA5NDUwMzQ2NjYwIiwiMzUzNjM1NjQzODIzMjg2NDM2Il0sImNsaWVudF9pZCI6IjM1MzYzNjIwOTQ1MDM0NjY2MCIsImVtYWlsIjoiY2l1ci5ldWdlbkBnbWFpbC5jb20iLCJleHAiOjE3NjczNzQ3MzQsImlhdCI6MTc2NzMzMTUzNCwiaXNzIjoiaHR0cHM6Ly9wbTM2ZGV2LXNjanUyby51czEueml0YWRlbC5jbG91ZCIsImp0aSI6IlYyXzM1MzcyMzMyOTkwOTEzNjUyNS1hdF8zNTM3MjMzMjk5MDkyMDIwNjEiLCJuYmYiOjE3NjczMzE1MzQsInN1YiI6IjM1MzYzMjI4NTU5NTYzODkyNSJ9.NKcrVDSY1iHwBYfdenfTXQxfQDIOuF7iT6mUtWS8lqmFVeGpJiHqvgqFg4qcLOK76ZZ7AK2L0l2YEsctQs7PW7Sogi7GPvyKhlRhEeki45-a26QlRuUTccG7d84rbxhQfxaGtgP6ORqjfno4k5f14WyIeqfAwGJ6_Y8t07aqDyus7kU3ySxYHYFbW4EWlawplgquYt1myO69aUuGD03Mm3HksB3LFv4a7xoob9gKpxRU5g1m37QNuwtDLOmhDdjWmn4U2-DDCuZPYlIcE0m1HpCmyNE_WRGLF6ZYDvFnMDJoVkvDv-ZRNnbNw2inXGRihIbZ5HcsRLVF4v9ffGg_8Q', 'connection': 'close', 'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36', 'accept': '*/*', 'accept-encoding': 'gzip, deflate, br, zstd', 'accept-language': 'en-US,en;q=0.9', 'cookie': '_oauth2_proxy=Ezn4S6jblSy9Euh1esl42wQ2Ibqr2O21vJ9l3lbq0UWo1LXslcorroqQ3QRvQmKB_aGizUimlODufCZFs6WyyaeKjHgddW_aOkVWPxmyDcS3Ry9ovW2o449PBjkYMuf_DwEBLGGFutMl61dou9EypBhahTl_uuJqfrGtjnraVy1THgaOxD8pcXiLMMBWn1shdOuMecTMTbpMUPeC_7Xa91rjLcpLIqA6spTS3lHO47LGSu5D7oVhepJf_6s_-ForfvhXZQ-M0ZaPyDifnmOO4F5EWE9VxT_Gq-hTshmyu3G1kGYQxOzoKcXN55O04ffqSQOvpxd4mSk_HmQ1l2ygQC5EgjX3GDNAWL1iC5bGBLx6Jlyg0Jw1XUjF57veTb02Sq3yOCurDwh19tNm2AgoVB2yV2iDVOgmn4vwjDkgy4MWaUaQUU9LPGzORyCSUWahYVCvF_8GcxE-s1m8_x1-duDOuUkzBYxshZD-KXJTviu_FqzZlOg8JtTvyUe5mYgJN4bV9Zk4m9TIChqqcQKlAIfrVtbZAlBaWtAUc85iVzbbPruaaSqrNbVJS6pRWRYwrumdQw6mqKSciewMJK-ojH0FszmEZwafgmn33cvpidYevtuD9cgQhKI7958AF1e6Pl9gtO6w7mSvaTnve02xyMZ1kNVL99LmoSjvxkxsqu6JTAeVH_s-9J2hOwRYhLkh_XkIDXg-Zd9lBucozYb8c8Wtc-X5yjXPFWCgDAPXXIz46BwnNvOdGPQurArGt7jRnMGX2ysFq3tA0ejQlc3PzVx1qsTYprsoXgb2eqA8gM1YWkWNlI2tIa4nJXb-4_5Wyl10-IwWNn6fGf3AoZoUDVD7EzruwfQERTyEDGdzvm5K-iyVC1J8gZESD6W_7ChSAY3nywcBkLiqgEEMKFAzgBZxHOT-ucIa__PC2hl7Zda_Zs5NvQGJfYW4FV4AfT6l_LXEFvDSqYtqIsHc5dAlEQMfY3eIcLBJr_BQAPRHO-KlDUeHj4cHAJVgOpZBAvukB8QBHH5n5Pqr7_1SB0huQvLlO60hTvYm2pmwGFrxVZk9K7PsYGU3KwaB8aM0HixCVxfjAe_tL314h4WQWdnCFmi2pmQEN3dvHe7oJq-Ttn__yu-8rgYc0Tdki-0V3LRvoW2nmJ1G97EalGfd63fw6HWuWfCHmiLFtffoPOpEFfR1Gf9AEMXGAwPIK87UzSWSXzpTtKknBH3p595UHSBCNOLm_bNtLtSkBXqp3g8PLJqfRdmI2OLcfw2_p03w-PDnDgZNC8IFQlJFL0pqqwyS1CzFZzPa-8ZzeN0xUq3MlgqSNeDU5Z8IFtbGK-DoadjxzhA5Bdf9ssmnp02OnjvpvtLG1L7pbAMI5EmLNgkAokegX2g0cIg49p2qMsZ0uaRY60A-xl5gBkfI_bie4gKJAPI5u2DWCC6IrMEK-6bcdWnXoW4JnkcyFulvujhybhk-486ykaBiqAdMxxqsCaae5VFo-qiqdjRLjNXuoC0LQcZRr5tMc6ukKwctJeGNxtqBavB-rv2a8BC9Kvxk92VPmnVpMLOmozYUbfmvdRZ2yP6p2TGlITN6cJu6Oxr4vaESs41k18QA77XJR7BuQBYB_U91nHVVZepK-OH3z800mu8ybDcw0Dk2HLsAUHVmdmiBfbcbmrE_xBGV_H5vY9pGU6yLfotUJoUhYKDy0H_qCfMMLRbD9fr6Ii3W-MUzW0h6AoFzvD5q0R2qP9CfqwzU_u1OZdEkM1tmxEriOYFAITkTnzMDbq2YS69dPj_mDH-IwCWuZ5yJxeoQcXH5C8taRKge2AEEZ45qVtJgu6ilsOjaR2EElYYk-hvO1ME45aCHA1QpGGzC18YWumcsljYT--KtZEdIxIv_BKwdqUtGq4STAwrQfXzX71mzH4A4RCGMldcZzvckwzDWAnz9pAZZHMhsKVWJIramNxZhQ7gDm3N639L8IFo6sUv3H5A7JEIo_d5apvrNEzQoU4RAgxFTHsPmySodWGnw6J_xqgUSOHvv64EZFMebiKtlPoVlx_WYY9nwwqqLkZg2S9nQ75OBjXCCiY21aKe-KrBD0sKoKi_2lixKRd4273zFHrbdAM0pLEVCYwIXu_itBBGwXhf1wNV6tFnKbmfaKTbJ3A6Mzo5cizwHVporHrvqBaO0b81r_D0ehBuzo3yJ632gC8yF_TStI2w6TatgJHF-TEVE-LWNRbbrVnLIqisdJwGDhMX_9R6vwUhzYko28J7mFPJMFoOetEF5hy3xHX_fw5_BEfA3ffpZ0MaoBSNthTTn9FXCpXQAA2MKnh0S6HJA0ft7tPYM5RbM82TsmxcN07SBDY8-7YpRaqwjFYEEzVqU77zcoEH2YLkJrEZS3QrzE6AS-d-1Sz-d6YGIAqgUiso=|1767331580|E1cm-fyG8HALalJSoQx-uowOb-Q8Z9Vjqs2XGaYK198=', 'referer': 'http://localhost:8080/', 'sec-ch-ua': '"Google Chrome";v="135", "Not-A.Brand";v="8", "Chromium";v="135"', 'sec-ch-ua-mobile': '?0', 'sec-ch-ua-platform': '"Linux"', 'sec-fetch-dest': 'empty', 'sec-fetch-mode': 'cors', 'sec-fetch-site': 'same-origin', 'x-forwarded-access-token': 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjM1MzYzMjI4NjE4MjM4MjczMyIsInR5cCI6IkpXVCJ9.eyJhdWQiOlsiMzUzNjM2MjA5NDUwMzQ2NjYwIiwiMzUzNjM1NjQzODIzMjg2NDM2Il0sImNsaWVudF9pZCI6IjM1MzYzNjIwOTQ1MDM0NjY2MCIsImVtYWlsIjoiY2l1ci5ldWdlbkBnbWFpbC5jb20iLCJleHAiOjE3NjczNzQ3MzQsImlhdCI6MTc2NzMzMTUzNCwiaXNzIjoiaHR0cHM6Ly9wbTM2ZGV2LXNjanUyby51czEueml0YWRlbC5jbG91ZCIsImp0aSI6IlYyXzM1MzcyMzMyOTkwOTEzNjUyNS1hdF8zNTM3MjMzMjk5MDkyMDIwNjEiLCJuYmYiOjE3NjczMzE1MzQsInN1YiI6IjM1MzYzMjI4NTU5NTYzODkyNSJ9.NKcrVDSY1iHwBYfdenfTXQxfQDIOuF7iT6mUtWS8lqmFVeGpJiHqvgqFg4qcLOK76ZZ7AK2L0l2YEsctQs7PW7Sogi7GPvyKhlRhEeki45-a26QlRuUTccG7d84rbxhQfxaGtgP6ORqjfno4k5f14WyIeqfAwGJ6_Y8t07aqDyus7kU3ySxYHYFbW4EWlawplgquYt1myO69aUuGD03Mm3HksB3LFv4a7xoob9gKpxRU5g1m37QNuwtDLOmhDdjWmn4U2-DDCuZPYlIcE0m1HpCmyNE_WRGLF6ZYDvFnMDJoVkvDv-ZRNnbNw2inXGRihIbZ5HcsRLVF4v9ffGg_8Q', 'x-forwarded-email': '353632285595638925', 'x-forwarded-preferred-username': 'eugen@paper.us1.zitadel.cloud', 'x-forwarded-user': '353632285595638925'}
+papermerge-1    | DEBUG 2026-01-02 05:26:20,345 papermerge.core.features.auth:get_current_user: Token identified as JWT
+papermerge-1    | DEBUG 2026-01-02 05:26:20,345 papermerge.core.features.auth:_authenticate_with_jwt: Attempting JWT authentication
+papermerge-1    | DEBUG 2026-01-02 05:26:20,345 papermerge.core.features.auth:extract_token_data: extract_token_data called with token: eyJhbGciOiJSUzI1NiIsImtpZCI6IjM1MzYzMjI4NjE4MjM4Mj...
+papermerge-1    | DEBUG 2026-01-02 05:26:20,345 papermerge.core.features.auth:extract_token_data: Token contains dots, splitting...
+papermerge-1    | DEBUG 2026-01-02 05:26:20,345 papermerge.core.features.auth:extract_token_data: Token split into 3 parts
+papermerge-1    | DEBUG 2026-01-02 05:26:20,345 papermerge.core.features.auth:extract_token_data: Decoding payload: eyJhdWQiOlsiMzUzNjM2MjA5NDUwMzQ2NjYwIiwiMzUzNjM1Nj...
+papermerge-1    | DEBUG 2026-01-02 05:26:20,345 papermerge.core.features.auth:extract_token_data: Decoded data: {'aud': ['353636209450346660', '353635643823286436'], 'client_id': '353636209450346660', 'email': 'ciur.eugen@gmail.com', 'exp': 1767374734, 'iat': 1767331534, 'iss': 'https://pm36dev-scju2o.us1.zitadel.cloud', 'jti': 'V2_353723329909136525-at_353723329909202061', 'nbf': 1767331534, 'sub': '353632285595638925'}
+papermerge-1    | DEBUG 2026-01-02 05:26:20,345 papermerge.core.features.auth:extract_token_data: Extracted username=None, email=ciur.eugen@gmail.com, groups=[]
+papermerge-1    | INFO 2026-01-02 05:26:20,346 httptools_impl 172.29.0.4:0 - "GET /users/me HTTP/1.0" 500
+papermerge-1    | 172.29.0.4 - - [02/Jan/2026:05:26:20 +0000] "GET /favicon.ico HTTP/1.1" 200 15406 "http://localhost:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+oauth2-proxy-1  | 172.29.0.1:46788 - 5a83591d-18fd-4298-aa90-35a4631993d8 - 353632285595638925 [2026/01/02 05:26:20] localhost:8080 GET / "/favicon.ico" HTTP/1.1 "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36" 200 15406 0.001
+papermerge-1    | 172.29.0.4 - - [02/Jan/2026:05:26:20 +0000] "GET /localization/en/_default.json HTTP/1.1" 200 25377 "http://localhost:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+oauth2-proxy-1  | 172.29.0.1:52312 - ecf892f8-651c-4dac-8070-e456e6e1422b - 353632285595638925 [2026/01/02 05:26:20] localhost:8080 GET / "/localization/en/_default.json" HTTP/1.1 "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36" 200 25377 0.001
+papermerge-1    | ERROR 2026-01-02 05:26:20,346 httptools_impl Exception in ASGI application
+papermerge-1    | Traceback (most recent call last):
+papermerge-1    |   File "/usr/local/lib/python3.14/site-packages/uvicorn/protocols/http/httptools_impl.py", line 409, in run_asgi
+papermerge-1    |     result = await app(  # type: ignore[func-returns-value]
+papermerge-1    |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+papermerge-1    |         self.scope, self.receive, self.send
+papermerge-1    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+papermerge-1    |     )
+papermerge-1    |     ^
+papermerge-1    |   File "/usr/local/lib/python3.14/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+papermerge-1    |     return await self.app(scope, receive, send)
+papermerge-1    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+papermerge-1    |   File "/usr/local/lib/python3.14/site-packages/fastapi/applications.py", line 1139, in __call__
+papermerge-1    |     await super().__call__(scope, receive, send)
+papermerge-1    |   File "/usr/local/lib/python3.14/site-packages/starlette/applications.py", line 107, in __call__
+papermerge-1    |     await self.middleware_stack(scope, receive, send)
+papermerge-1    |   File "/usr/local/lib/python3.14/site-packages/starlette/middleware/errors.py", line 186, in __call__
+papermerge-1    |     raise exc
+papermerge-1    |   File "/usr/local/lib/python3.14/site-packages/starlette/middleware/errors.py", line 164, in __call__
+papermerge-1    |     await self.app(scope, receive, _send)
+papermerge-1    |   File "/usr/local/lib/python3.14/site-packages/starlette/middleware/cors.py", line 85, in __call__
+papermerge-1    |     await self.app(scope, receive, send)
+papermerge-1    |   File "/usr/local/lib/python3.14/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+papermerge-1    |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+papermerge-1    |   File "/usr/local/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+papermerge-1    |     raise exc
+papermerge-1    |   File "/usr/local/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+papermerge-1    |     await app(scope, receive, sender)
+papermerge-1    |   File "/usr/local/lib/python3.14/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+papermerge-1    |     await self.app(scope, receive, send)
+papermerge-1    |   File "/usr/local/lib/python3.14/site-packages/starlette/routing.py", line 716, in __call__
+papermerge-1    |     await self.middleware_stack(scope, receive, send)
+papermerge-1    |   File "/usr/local/lib/python3.14/site-packages/starlette/routing.py", line 736, in app
+papermerge-1    |     await route.handle(scope, receive, send)
+papermerge-1    |   File "/usr/local/lib/python3.14/site-packages/starlette/routing.py", line 290, in handle
+papermerge-1    |     await self.app(scope, receive, send)
+papermerge-1    |   File "/usr/local/lib/python3.14/site-packages/fastapi/routing.py", line 120, in app
+papermerge-1    |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+papermerge-1    |   File "/usr/local/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+papermerge-1    |     raise exc
+papermerge-1    |   File "/usr/local/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+papermerge-1    |     await app(scope, receive, sender)
+papermerge-1    |   File "/usr/local/lib/python3.14/site-packages/fastapi/routing.py", line 106, in app
+papermerge-1    |     response = await f(request)
+papermerge-1    |                ^^^^^^^^^^^^^^^^
+papermerge-1    |   File "/usr/local/lib/python3.14/site-packages/fastapi/routing.py", line 420, in app
+papermerge-1    |     solved_result = await solve_dependencies(
+papermerge-1    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^
+papermerge-1    |     ...<6 lines>...
+papermerge-1    |     )
+papermerge-1    |     ^
+papermerge-1    |   File "/usr/local/lib/python3.14/site-packages/fastapi/dependencies/utils.py", line 674, in solve_dependencies
+papermerge-1    |     solved = await call(**solved_result.values)
+papermerge-1    |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+papermerge-1    |   File "/app/papermerge/core/features/auth/__init__.py", line 323, in get_current_user
+papermerge-1    |     user = await _authenticate_with_jwt(token, db_session, security_scopes)
+papermerge-1    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+papermerge-1    |   File "/app/papermerge/core/features/auth/__init__.py", line 198, in _authenticate_with_jwt
+papermerge-1    |     token_data = extract_token_data(token)
+papermerge-1    |   File "/app/papermerge/core/features/auth/__init__.py", line 116, in extract_token_data
+papermerge-1    |     return types.TokenData(
+papermerge-1    |            ~~~~~~~~~~~~~~~^
+papermerge-1    |         scopes=token_scopes,
+papermerge-1    |         ^^^^^^^^^^^^^^^^^^^^
+papermerge-1    |     ...<4 lines>...
+papermerge-1    |         roles=roles,
+papermerge-1    |         ^^^^^^^^^^^^
+papermerge-1    |     )
+papermerge-1    |     ^
+papermerge-1    |   File "/usr/local/lib/python3.14/site-packages/pydantic/main.py", line 250, in __init__
+papermerge-1    |     validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+papermerge-1    | pydantic_core._pydantic_core.ValidationError: 1 validation error for TokenData
+papermerge-1    | username
+papermerge-1    |   Input should be a valid string [type=string_type, input_value=None, input_type=NoneType]
+papermerge-1    |     For further information visit https://errors.pydantic.dev/2.12/v/string_type
+papermerge-1    | 172.29.0.4 - - [02/Jan/2026:05:26:20 +0000] "GET /api/users/me HTTP/1.1" 500 21 "http://localhost:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+oauth2-proxy-1  | 172.29.0.1:52324 - 920c5195-997f-4f06-829e-4996ce1511dd - 353632285595638925 [2026/01/02 05:26:20] localhost:8080 GET / "/api/users/me" HTTP/1.1 "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36" 500 21 0.010
+postgres-1      | 2026-01-02 05:29:54.140 UTC [27] LOG:  checkpoint starting: time
+postgres-1      | 2026-01-02 05:29:54.362 UTC [27] LOG:  checkpoint complete: wrote 5 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.203 s, sync=0.008 s, total=0.222 s; sync files=4, longest=0.007 s, average=0.002 s; distance=0 kB, estimate=0 kB; lsn=0/1BA9668, redo lsn=0/1BA9610
