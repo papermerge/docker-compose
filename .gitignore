@@ -1,3 +1,5 @@
 *.pid
 .env
 .logs
+*.pat
+*.txt

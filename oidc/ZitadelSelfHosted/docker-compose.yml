@@ -1,0 +1,205 @@
+# Docker Compose for Papermerge with Self-Hosted Zitadel OIDC Authentication
+#
+# Architecture:
+#   User -> OAuth2-Proxy (OIDC auth) -> Papermerge Core
+#              |                             |
+#        Zitadel (self-hosted)         Celery Workers
+#              |                             |
+#        PostgreSQL 17                  Redis (task queue)
+#        (Zitadel + Papermerge DBs)
+#
+# Features:
+#   - Complete user self-service: registration, login, logout, password reset
+#   - Automatic role assignment (privateUser) on registration
+#   - Email verification support
+#   - Password change functionality
+#   - Self-hosted Zitadel instance
+#
+# Prerequisites:
+#   1. Generate secrets: openssl rand -base64 32
+#   2. Copy .env.example to .env and configure all values
+#   3. Configure SMTP settings for email verification and password reset
+#
+# Usage:
+#   cd docker-zitadel-selfhosted
+#   docker compose up -d
+#
+# First-time setup:
+#   1. Access Zitadel Console: http://localhost:8081
+#   2. Login with default credentials (shown in logs)
+#   3. Create a new project for Papermerge
+#   4. Create application (Web, PKCE, Authorization Code Flow)
+#   5. Configure redirect URIs: http://localhost:8080/oauth2/callback
+#   6. Enable user registration in Zitadel settings
+#   7. Create "privateUser" role and assign to new users automatically
+#
+# Access:
+#   - Papermerge: http://localhost:8080
+#   - Zitadel Console: http://localhost:8081
+#   - Zitadel API: http://localhost:8081 (OIDC endpoints at /.well-known/openid-configuration)
+services:
+  # PostgreSQL 17 - Shared database for both Zitadel and Papermerge
+  postgres:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_INITDB_ARGS: "-E UTF8 --locale=C"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-dbs.sql:/docker-entrypoint-initdb.d/init-dbs.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Zitadel - Self-hosted Identity and Access Management
+  zitadel:
+    image: ghcr.io/zitadel/zitadel:v4.9.1
+    restart: unless-stopped
+    command: start-from-init --config /zitadel-config.yaml --masterkey ${ZITADEL_MASTERKEY} --tlsMode disabled
+    environment:
+      ZITADEL_DATABASE_POSTGRES_HOST: postgres
+      ZITADEL_DATABASE_POSTGRES_PORT: 5432
+      ZITADEL_DATABASE_POSTGRES_DATABASE: ${ZITADEL_DB_NAME:-zitadel}
+      ZITADEL_DATABASE_POSTGRES_USER_USERNAME: ${POSTGRES_USER:-postgres}
+      ZITADEL_DATABASE_POSTGRES_USER_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      ZITADEL_DATABASE_POSTGRES_USER_SSL_MODE: disable
+      ZITADEL_DATABASE_POSTGRES_ADMIN_USERNAME: ${POSTGRES_USER:-postgres}
+      ZITADEL_DATABASE_POSTGRES_ADMIN_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      ZITADEL_DATABASE_POSTGRES_ADMIN_SSL_MODE: disable
+      ZITADEL_LOG_LEVEL: debug
+      ZITADEL_LOGSTORE_ACCESS_STDOUT_ENABLED: "true"
+      ZITADEL_LOGIN_V2_PATH: /ui/v2/login
+    volumes:
+      - ./zitadel-config.yaml:/zitadel-config.yaml:ro
+    ports:
+      - "8081:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+  zitadel-login:
+    image: ghcr.io/zitadel/zitadel-login:latest
+    restart: unless-stopped
+    environment:
+      - ZITADEL_API_URL=http://localhost:8080
+      - NEXT_PUBLIC_BASE_PATH=/ui/v2/login
+    network_mode: service:zitadel
+    depends_on:
+      - zitadel
+
+  # Redis - Task queue for Celery workers
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # OAuth2 Proxy - Handles OIDC authentication with Zitadel
+  oauth2-proxy:
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.7.1
+    restart: unless-stopped
+    command:
+      - --http-address=0.0.0.0:4180
+      - --upstream=http://papermerge:80
+      # OIDC Provider configuration
+      - --provider=oidc
+      - --provider-display-name=Zitadel
+      - --client-id=${ZITADEL_CLIENT_ID}
+      - --client-secret=${ZITADEL_CLIENT_SECRET}
+      - --oidc-issuer-url=http://zitadel:8081
+      - --redirect-url=http://localhost:8080/oauth2/callback
+      # Email domain validation (allow all for self-registration)
+      - --email-domain=*
+      # Cookie configuration
+      - --cookie-secret=${OAUTH2_COOKIE_SECRET}
+      - --cookie-secure=false
+      - --cookie-name=_oauth2_proxy
+      - --cookie-httponly=true
+      - --cookie-samesite=lax
+      - --cookie-expire=168h
+      - --cookie-refresh=1h
+      # Authentication flow
+      - --skip-provider-button=true
+      - --user-id-claim=sub
+      # Token handling - include roles claim
+      - --pass-access-token=true
+      - --set-authorization-header=true
+      - --scope=openid profile email urn:zitadel:iam:org:project:roles
+      # Security headers
+      - --reverse-proxy=true
+      - --real-client-ip-header=X-Forwarded-For
+      # Whitelisted domains
+      - --whitelist-domain=localhost:8080
+      - --whitelist-domain=localhost:8081
+      # Session management
+      - --session-store-type=cookie
+      # Insecure OIDC skip verify (for local development only)
+      - --insecure-oidc-skip-issuer-verification=true
+      - --ssl-insecure-skip-verify=true
+    ports:
+      - "8080:4180"
+    depends_on:
+      zitadel:
+        condition: service_started
+      papermerge:
+        condition: service_started
+    environment:
+      OAUTH2_PROXY_COOKIE_SECRET: ${OAUTH2_COOKIE_SECRET}
+
+  # Papermerge - Document Management System (OIDC enabled)
+  papermerge:
+    image: papermerge/papermerge:3.6.0a16-oidc
+    restart: unless-stopped
+    environment:
+      PM_DB_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${PAPERMERGE_DB_NAME:-papermerge}
+      PM_MEDIA_ROOT: /app/media
+      PM_REDIS_URL: redis://redis:6379/0
+      # OIDC Configuration for Zitadel
+      PM_OIDC_LOGOUT_URL: http://localhost:8081/oidc/v1/end_session
+      PM_POST_LOGOUT_REDIRECT_URI: http://localhost:8080
+      PM_OIDC_CLIENT_ID: ${ZITADEL_CLIENT_ID}
+
+    volumes:
+      - papermerge_media:/app/media
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Mailpit - Development SMTP server (optional, for testing emails)
+  # Remove or replace with real SMTP in production
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    ports:
+      - "8025:8025"  # Web UI
+      - "1025:1025"  # SMTP server
+    environment:
+      MP_MAX_MESSAGES: 500
+      MP_DATABASE: /data/mailpit.db
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+    volumes:
+      - mailpit_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:
+  papermerge_media:
+  mailpit_data:
