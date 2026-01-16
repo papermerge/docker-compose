@@ -1,7 +1,7 @@
 services:
   zitadel:
     restart: unless-stopped
-    image: ghcr.io/zitadel/zitadel:latest
+    image: ghcr.io/zitadel/zitadel:v4.9.1
     command: start-from-init --masterkey "MasterkeyNeedsToHave32Characters"
     environment:
       # See "What's next" to learn about how to serve Zitadel on a different domain or IP.
@@ -57,10 +57,9 @@ services:
       # If you can't log in, check the available login names:
       # echo "select * from projections.login_names3;" | psql -h localhost -U postgres -d zitadel
       # The postgres users password is postgres.
-      # ZITADEL_FIRSTINSTANCE_ORG_NAME: My Organization
-      # ZITADEL_FIRSTINSTANCE_ORG_HUMAN_USERNAME: root
-      # ZITADEL_FIRSTINSTANCE_ORG_HUMAN_PASSWORD: RootPassword1!
-
+      ZITADEL_FIRSTINSTANCE_ORG_NAME: My Organization
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_USERNAME: root
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_PASSWORD: AdminPassword123!
       # Enable debug logs
       # ZITADEL_LOG_LEVEL: debug
       # Write Access Logs to stdout.
@@ -111,7 +110,7 @@ services:
       PGUSER: postgres
       POSTGRES_PASSWORD: postgres
     healthcheck:
-      test: 
+      test:
       - CMD-SHELL
       - pg_isready
       - -d
