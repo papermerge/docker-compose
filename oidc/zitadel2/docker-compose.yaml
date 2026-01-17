@@ -1,0 +1,177 @@
+services:
+  zitadel:
+    restart: unless-stopped
+    image: ghcr.io/zitadel/zitadel:v4.9.1
+    command: start-from-init --masterkey "MasterkeyNeedsToHave32Characters"
+    environment:
+      ZITADEL_EXTERNALDOMAIN: localhost
+      ZITADEL_EXTERNALSECURE: false
+      ZITADEL_TLS_ENABLED: false
+      ZITADEL_DATABASE_POSTGRES_HOST: db
+      ZITADEL_DATABASE_POSTGRES_PORT: 5432
+      ZITADEL_DATABASE_POSTGRES_DATABASE: zitadel
+      ZITADEL_DATABASE_POSTGRES_ADMIN_USERNAME: postgres
+      ZITADEL_DATABASE_POSTGRES_ADMIN_PASSWORD: postgres
+      ZITADEL_DATABASE_POSTGRES_ADMIN_SSL_MODE: disable
+      ZITADEL_DATABASE_POSTGRES_USER_USERNAME: zitadel
+      ZITADEL_DATABASE_POSTGRES_USER_PASSWORD: zitadel
+      ZITADEL_DATABASE_POSTGRES_USER_SSL_MODE: disable
+
+      # Login client configuration
+      ZITADEL_FIRSTINSTANCE_LOGINCLIENTPATPATH: /current-dir/login-client.pat
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_PASSWORDCHANGEREQUIRED: false
+      ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_MACHINE_USERNAME: login-client
+      ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_MACHINE_NAME: Automatically Initialized IAM_LOGIN_CLIENT
+      ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_PAT_EXPIRATIONDATE: '2029-01-01T00:00:00Z'
+
+      # Login v2 configuration
+      ZITADEL_DEFAULTINSTANCE_FEATURES_LOGINV2_REQUIRED: true
+      ZITADEL_DEFAULTINSTANCE_FEATURES_LOGINV2_BASEURI: http://localhost:3000/ui/v2/login
+      ZITADEL_OIDC_DEFAULTLOGINURLV2: http://localhost:3000/ui/v2/login/login?authRequest=
+      ZITADEL_OIDC_DEFAULTLOGOUTURLV2: http://localhost:3000/ui/v2/login/logout?post_logout_redirect=
+      ZITADEL_SAML_DEFAULTLOGINURLV2: http://localhost:3000/ui/v2/login/login?samlRequest=
+
+      # IMPORTANT: Admin machine user for automated provisioning
+      # This PAT is used by the provisioning script
+      ZITADEL_FIRSTINSTANCE_PATPATH: /current-dir/admin.pat
+      ZITADEL_FIRSTINSTANCE_ORG_MACHINE_MACHINE_USERNAME: admin
+      ZITADEL_FIRSTINSTANCE_ORG_MACHINE_MACHINE_NAME: Automatically Initialized IAM_OWNER
+      ZITADEL_FIRSTINSTANCE_ORG_MACHINE_PAT_EXPIRATIONDATE: '2029-01-01T00:00:00Z'
+
+      # Initial admin user
+      ZITADEL_FIRSTINSTANCE_ORG_NAME: My Organization
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_USERNAME: root
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_PASSWORD: AdminPassword123!
+    healthcheck:
+      test:
+        - CMD
+        - /app/zitadel
+        - ready
+      interval: 10s
+      timeout: 60s
+      retries: 5
+      start_period: 10s
+    user: "0"
+    volumes:
+      - .:/current-dir:delegated
+    ports:
+      - 8080:8080
+      - 3000:3000
+      - 8081:4180
+    networks:
+      - zitadel
+    depends_on:
+      db:
+        condition: service_healthy
+
+  login:
+    restart: unless-stopped
+    image: ghcr.io/zitadel/zitadel-login:latest
+    environment:
+      - ZITADEL_API_URL=http://localhost:8080
+      - NEXT_PUBLIC_BASE_PATH=/ui/v2/login
+      - ZITADEL_SERVICE_USER_TOKEN_FILE=/current-dir/login-client.pat
+    network_mode: service:zitadel
+    user: "0"
+    volumes:
+      - .:/current-dir:ro
+    depends_on:
+      zitadel:
+        condition: service_healthy
+        restart: false
+
+  # Automated provisioning service
+  # This runs once to create the Zitadel project and application
+  provisioner:
+    image: alpine:latest
+    network_mode: service:zitadel
+    volumes:
+      - .:/current-dir
+    command: >
+      sh -c "
+        apk add --no-cache curl jq bash &&
+        chmod +x /current-dir/provision-zitadel.sh &&
+        /current-dir/provision-zitadel.sh
+      "
+    depends_on:
+      zitadel:
+        condition: service_healthy
+    restart: "no"
+
+  db:
+    restart: unless-stopped
+    image: postgres:17
+    environment:
+      PGUSER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - pg_isready
+      - -d
+      - zitadel
+      - -U
+      - postgres
+      interval: 10s
+      timeout: 30s
+      retries: 5
+      start_period: 20s
+    networks:
+      - zitadel
+    ports:
+      - 5432:5432
+    volumes:
+      - 'data:/var/lib/postgresql/data:rw'
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  proxy:
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.13.0
+    restart: unless-stopped
+    network_mode: service:zitadel
+    command:
+      - --http-address=0.0.0.0:4180
+      - --upstream=http://pm:80
+      - --provider=oidc
+      - --provider-display-name=Zitadel
+      - --client-id=${ZITADEL_CLIENT_ID}
+      - --client-secret=${ZITADEL_CLIENT_SECRET}
+      - --oidc-issuer-url=http://localhost:8080
+      - --redirect-url=http://localhost:8081/oauth2/callback
+      - --email-domain=*
+      - --cookie-secret=${OAUTH2_COOKIE_SECRET}
+      - --cookie-secure=false
+      - --cookie-name=_oauth2_proxy
+      - --skip-provider-button=true
+      - --user-id-claim=sub
+      - --pass-access-token=true
+      - --set-authorization-header=true
+      - --scope=openid profile email
+      - --whitelist-domain=localhost:8080
+    depends_on:
+      - pm
+      - provisioner
+    environment:
+      OAUTH2_PROXY_COOKIE_SECRET: ${OAUTH2_COOKIE_SECRET}
+
+  pm:
+    image: papermerge/papermerge:3.6.0a16-oidc
+    restart: unless-stopped
+    environment:
+      PM_DB_URL: postgresql://postgres:postgres@db:5432/pmdb
+      PM_OIDC_LOGOUT_URL: http://localhost:8080/oidc/v1/end_session
+      PM_POST_LOGOUT_REDIRECT_URI: http://localhost:8080
+      PM_OIDC_CLIENT_ID: ${ZITADEL_CLIENT_ID}
+    volumes:
+      - papermerge_media:/app/media
+    networks:
+      - zitadel
+    depends_on:
+      db:
+        condition: service_healthy
+
+networks:
+  zitadel:
+
+volumes:
+  data:
+  papermerge_media:
