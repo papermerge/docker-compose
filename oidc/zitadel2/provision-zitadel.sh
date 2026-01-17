@@ -103,9 +103,9 @@ else
             "projectRoleAssertion": true,
             "projectRoleCheck": true
         }')
-    
+
     echo "Project create response: $PROJECT_CREATE_RESPONSE"
-    
+
     PROJECT_ID=$(echo "$PROJECT_CREATE_RESPONSE" | jq -r '.id // empty')
     if [ -z "$PROJECT_ID" ]; then
         echo "ERROR: Could not create project"
@@ -138,25 +138,24 @@ APP_ID=$(echo "$APP_RESPONSE" | jq -r '.result[0].id // empty')
 
 if [ -n "$APP_ID" ]; then
     echo "Application already exists with ID: $APP_ID"
-    
     # For existing apps, we need to get the client ID from the app details
     APP_DETAILS=$(curl -s -X GET "${API_URL}/management/v1/projects/${PROJECT_ID}/apps/${APP_ID}" \
         -H "Authorization: Bearer ${PAT}" \
         -H "x-zitadel-orgid: ${ORG_ID}")
-    
+
     echo "App details response: $APP_DETAILS"
-    
+
     CLIENT_ID=$(echo "$APP_DETAILS" | jq -r '.app.oidcConfig.clientId // empty')
-    
+
     if [ -z "$CLIENT_ID" ]; then
         echo "ERROR: Could not get client ID for existing application"
         exit 1
     fi
-    
+
     echo "WARNING: Application already exists. Client secret cannot be retrieved again."
     echo "If you need a new secret, you must manually regenerate it in the Zitadel console"
     echo "or delete the application and re-run this script."
-    
+
     # Write what we have to the credentials file
     cat > /current-dir/zitadel-credentials.env << EOF
 # Auto-generated Zitadel credentials
@@ -166,10 +165,10 @@ ZITADEL_CLIENT_ID=${CLIENT_ID}
 # Either use your existing secret or regenerate in Zitadel console
 ZITADEL_CLIENT_SECRET=
 EOF
-    
+
     echo "Partial credentials written to zitadel-credentials.env"
     echo "Please manually add the client secret to complete the configuration."
-    
+
 else
     echo "Creating OAuth2-Proxy application..."
     APP_CREATE_RESPONSE=$(curl -s -X POST "${API_URL}/management/v1/projects/${PROJECT_ID}/apps/oidc" \
