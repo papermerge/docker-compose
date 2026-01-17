@@ -1,5 +1,11 @@
 # PM + ZD Basic Setup
 
+This docker compose is indented to illustrate general direction of how PM
+(Papermerge) is supposed to interact with ZD (Zitadel). The setup
+is very basic and it holds more educational character than ready to use recipe.
+
+## Setup
+
 Create an `.env`
 Login into ZD:
 
@@ -74,7 +80,6 @@ UPDATE users
 SET is_superuser = true
 WHERE username = '355901215668240388';   # whatever was created in DB (excluding systemuser)
 `
-
 
 
 # Complete HTTP Request Flow Diagram
