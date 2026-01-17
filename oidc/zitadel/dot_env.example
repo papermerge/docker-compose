@@ -1,0 +1,11 @@
+# Rename this file to `.env`
+
+# Initially leave `ZITADEL_CLIENT_ID` and `ZITADEL_CLIENT_SECRET` empty
+# you need to get yourself this values from ZD UI by logging into `http://localhost:8080/`
+# with `root@my-organization.localhost` username
+ZITADEL_CLIENT_ID=35...get value from ZD UI...76
+ZITADEL_CLIENT_SECRET=ac..get value from ZD UI...Ni
+
+# 2. Generate `OAUTH2_COOKIE_SECRET` with
+#      `openssl rand -base64 32 | head -c 32`
+OAUTH2_COOKIE_SECRET=3HdVO1yqvePsPV4gR8BpLdk8PAXCgWvW8sbiTSp47MM=
