@@ -4,14 +4,9 @@ services:
     image: ghcr.io/zitadel/zitadel:v4.9.1
     command: start-from-init --masterkey "MasterkeyNeedsToHave32Characters"
     environment:
-      # See "What's next" to learn about how to serve Zitadel on a different domain or IP.
       ZITADEL_EXTERNALDOMAIN: localhost
-
-      # See "What's next" to learn about how to enable TLS.
       ZITADEL_EXTERNALSECURE: false
       ZITADEL_TLS_ENABLED: false
-
-      # Database connection settings.
       ZITADEL_DATABASE_POSTGRES_HOST: db
       ZITADEL_DATABASE_POSTGRES_PORT: 5432
       # The database is created by the init job if it does not exist.
@@ -60,11 +55,9 @@ services:
       ZITADEL_FIRSTINSTANCE_ORG_NAME: My Organization
       ZITADEL_FIRSTINSTANCE_ORG_HUMAN_USERNAME: root
       ZITADEL_FIRSTINSTANCE_ORG_HUMAN_PASSWORD: AdminPassword123!
-      # Enable debug logs
       # ZITADEL_LOG_LEVEL: debug
       # Write Access Logs to stdout.
       # ZITADEL_LOGSTORE_ACCESS_STDOUT_ENABLED: true
-
     healthcheck:
       test:
         - CMD
@@ -80,12 +73,12 @@ services:
     ports:
       - 8080:8080
       - 3000:3000
+      - 8081:4180
     networks:
       - zitadel
     depends_on:
       db:
         condition: service_healthy
-
   login:
     restart: unless-stopped
     image: ghcr.io/zitadel/zitadel-login:latest
@@ -102,7 +95,6 @@ services:
       zitadel:
         condition: service_healthy
         restart: false
-
   db:
     restart: unless-stopped
     image: postgres:17
@@ -127,9 +119,65 @@ services:
       - 5432:5432
     volumes:
       - 'data:/var/lib/postgresql/data:rw'
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+  proxy:
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.13.0
+    restart: unless-stopped
+    network_mode: service:zitadel
+    command:
+      - --http-address=0.0.0.0:4180
+      - --upstream=http://pm:80
+      # Use generic OIDC provider (not keycloak-oidc)
+      - --provider=oidc
+      - --provider-display-name=Zitadel
+      # Zitadel Cloud configuration (set via environment variables)
+      - --client-id=${ZITADEL_CLIENT_ID}
+      - --client-secret=${ZITADEL_CLIENT_SECRET}
+      - --oidc-issuer-url=http://localhost:8080
+      - --redirect-url=http://localhost:8081/oauth2/callback
+      # Allow all email domains (adjust as needed)
+      - --email-domain=*
+      # Cookie configuration
+      - --cookie-secret=${OAUTH2_COOKIE_SECRET}
+      - --cookie-secure=false
+      - --cookie-name=_oauth2_proxy
+      # Skip provider selection button (go directly to Zitadel)
+      - --skip-provider-button=true
+      # Use 'sub' claim as user ID (Zitadel recommendation)
+      - --user-id-claim=sub
+      # Pass access token to upstream (Papermerge)
+      - --pass-access-token=true
+      - --set-authorization-header=true
+      # Request necessary scopes
+      - --scope=openid profile email
+      # Whitelist domains for logout redirects
+      - --whitelist-domain=localhost:8080
+    depends_on:
+      - pm
+    environment:
+      # These can also be set via command line args above
+      OAUTH2_PROXY_COOKIE_SECRET: ${OAUTH2_COOKIE_SECRET}
+  pm:
+    image: papermerge/papermerge:3.6.0a16-oidc
+    restart: unless-stopped
+    environment:
+      PM_DB_URL: postgresql://postgres:postgres@db:5432/pmdb
+      # OIDC Logout Configuration for Zitadel
+      # Zitadel's end_session_endpoint is at /oidc/v1/end_session
+      PM_OIDC_LOGOUT_URL: http://localhost:8080/oidc/v1/end_session
+      PM_POST_LOGOUT_REDIRECT_URI: http://localhost:8080
+      PM_OIDC_CLIENT_ID: ${ZITADEL_CLIENT_ID}
+    volumes:
+      - papermerge_media:/app/media
+    networks:
+      - zitadel
+    depends_on:
+      db:
+        condition: service_healthy
 
 networks:
   zitadel:
 
 volumes:
   data:
+  papermerge_media:
