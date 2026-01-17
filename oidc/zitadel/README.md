@@ -4,6 +4,40 @@ This docker compose is indented to illustrate general direction of how PM
 (Papermerge) is supposed to interact with ZD (Zitadel). The setup
 is very basic and it holds more educational character than ready to use recipe.
 
+In this setup the same user `root@my-organization.localhost` / `AdminPassword123!`
+is used to login into ZD (http://localhost:8080/ui/console) and PM (http://localhost:8081/).
+
+1. Initially login into ZD to make sure it is up and running
+2. Generate client ID/clientsecret in ZD (New Project -> New Application -> Web etc)
+3. Update `.env` file with client id and client secret
+4. Restart containers - but don't delete docker volumes! i.e. use `docker compose down` (**without -v flag !**)
+ and `docker compose up -d`
+5. On first login try PM will create a new user in its DB (username != system) e.g.
+
+```
+docker compose exec db psql -U postgres -d pmdb
+psql (17.7 (Debian 17.7-3.pgdg13+1))
+Type "help" for help.
+
+pmdb=# select id, username from users;
+                  id                  |      username
+--------------------------------------+--------------------
+ 00000000-0000-0000-0000-000000000000 | system
+ 3ef3cb6f-f180-4c29-80fa-b7aceff64ed7 | 355901215668240388
+
+```
+You need to manually grand non system user status "superuser":
+```
+pmdb=# update users set is_superuser=true where username='355901215668240388';
+UPDATE 1
+```
+6. Now you can login into PM:
+
+Address: http://localhost:8081/
+User: `root@my-organization.localhost`
+Password: `AdminPassword123!`
+
+
 ## Setup
 
 Create an `.env`
