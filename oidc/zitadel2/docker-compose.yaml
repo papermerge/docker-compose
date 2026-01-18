@@ -129,24 +129,28 @@ services:
     restart: unless-stopped
     network_mode: service:zitadel
     command:
-      - --http-address=0.0.0.0:4180
-      - --upstream=http://pm:80
-      - --provider=oidc
-      - --provider-display-name=Zitadel
-      - --client-id=${ZITADEL_CLIENT_ID}
-      - --client-secret=${ZITADEL_CLIENT_SECRET}
-      - --oidc-issuer-url=http://localhost:8080
-      - --redirect-url=http://localhost:8081/oauth2/callback
-      - --email-domain=*
-      - --cookie-secret=${OAUTH2_COOKIE_SECRET}
-      - --cookie-secure=false
-      - --cookie-name=_oauth2_proxy
-      - --skip-provider-button=true
-      - --user-id-claim=sub
-      - --pass-access-token=true
-      - --set-authorization-header=true
-      - --scope=openid profile email
-      - --whitelist-domain=localhost:8080
+    - --http-address=0.0.0.0:4180
+    - --upstream=http://pm:80
+    - --provider=oidc
+    - --provider-display-name=Zitadel
+    - --client-id=${ZITADEL_CLIENT_ID}
+    - --client-secret=${ZITADEL_CLIENT_SECRET}
+    - --oidc-issuer-url=http://localhost:8080
+    - --redirect-url=http://localhost:8081/oauth2/callback
+    - --email-domain=*
+    - --cookie-secret=${OAUTH2_COOKIE_SECRET}
+    - --cookie-secure=false
+    - --cookie-name=_oauth2_proxy
+    - --skip-provider-button=true
+    - --user-id-claim=sub
+    # Request roles scope and pass as groups
+    - --scope=openid profile email urn:zitadel:iam:org:project:roles
+    - --oidc-groups-claim=roles
+
+    # Pass user headers to upstream
+    - --pass-user-headers=true
+
+    - --whitelist-domain=localhost:8080
     depends_on:
       - pm
       - provisioner
@@ -161,6 +165,7 @@ services:
       PM_OIDC_LOGOUT_URL: http://localhost:8080/oidc/v1/end_session
       PM_POST_LOGOUT_REDIRECT_URI: http://localhost:8080
       PM_OIDC_CLIENT_ID: ${ZITADEL_CLIENT_ID}
+      PM_REMOTE_ROLES_HEADER: X-Forwarded-Groups
     volumes:
       - papermerge_media:/app/media
     networks:
