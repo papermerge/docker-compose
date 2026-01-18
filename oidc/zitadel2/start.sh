@@ -29,12 +29,12 @@ fi
 
 echo ""
 echo "Starting containers (this may take a minute)..."
-docker compose -f docker-compose.yaml up -d
+docker compose up -d
 
 echo ""
 echo "Waiting for provisioning to complete..."
 # Wait for the provisioner container to finish
-while docker compose -f docker-compose.yaml ps provisioner | grep -q "running"; do
+while docker compose ps provisioner | grep -q "running"; do
     echo "  Provisioning in progress..."
     sleep 2
 done
