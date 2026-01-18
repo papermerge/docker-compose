@@ -28,7 +28,7 @@ That's it! The script will:
 ## What Happens Behind the Scenes
 
 ### 1. Initial Startup
-The `docker-compose-automated.yaml` includes a `provisioner` service that:
+The `docker-compose.yaml` includes a `provisioner` service that:
 - Waits for Zitadel to be healthy
 - Uses Zitadel's admin PAT (Personal Access Token) to access the API
 - Creates a project named "Papermerge"
@@ -81,14 +81,14 @@ ZITADEL_CLIENT_SECRET=
 EOF
 
 # 3. Start containers
-docker compose -f docker-compose-automated.yaml up -d
+docker compose up -d
 
 # 4. Wait for provisioner
-docker compose -f docker-compose-automated.yaml logs -f provisioner
+docker compose logs -f provisioner
 
 # 5. Update .env with credentials from zitadel-credentials.env
 # 6. Restart proxy
-docker compose -f docker-compose-automated.yaml restart proxy
+docker compose restart proxy
 ```
 
 ## First Login
@@ -133,13 +133,13 @@ Common issues:
 If you see authentication errors:
 ```bash
 # Check proxy logs
-docker compose -f docker-compose-automated.yaml logs proxy
+docker compose logs proxy
 
 # Verify credentials are in .env
 cat .env
 
 # Manually restart
-docker compose -f docker-compose-automated.yaml restart proxy
+docker compose restart proxy
 ```
 
 ### Re-provisioning
@@ -148,7 +148,7 @@ If you need to start fresh:
 
 ```bash
 # Stop and remove volumes
-docker compose -f docker-compose-automated.yaml down -v
+docker compose down -v
 
 # Remove generated files
 rm -f .env zitadel-credentials.env admin.pat login-client.pat
@@ -227,7 +227,7 @@ For production:
 If you need to re-run just the provisioner:
 
 ```bash
-docker compose -f docker-compose-automated.yaml run --rm provisioner
+docker compose run --rm provisioner
 ```
 
 The provisioner is idempotent - it will detect existing projects/apps and skip creation.
