@@ -100,21 +100,6 @@ After setup completes:
    - Username: `root@my-organization.localhost`
    - Password: `AdminPassword123!`
 
-3. **Grant Superuser Status** (first time only):
-   ```bash
-   docker compose exec db psql -U postgres -d pmdb
-   ```
-
-   In psql:
-   ```sql
-   -- Find your user (will be a long numeric ID)
-   SELECT id, username, is_superuser FROM users WHERE username != 'system';
-
-   -- Make them superuser
-   UPDATE users SET is_superuser = true WHERE username = 'YOUR_USERNAME_FROM_ABOVE';
-   ```
-
-## Troubleshooting
 
 ### Provisioner Fails
 

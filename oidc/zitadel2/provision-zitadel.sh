@@ -321,18 +321,37 @@ else
     echo "WARNING: Could not find root user to grant admin role"
 fi
 
-echo "Creating token action to map roles..."
-ACTION_RESPONSE=$(curl -s -X POST "${API_URL}/management/v1/actions" \
+# Create action to add standard 'roles' claim
+echo "Creating token action to add roles claim..."
+ACTION_CREATE=$(curl -s -X POST "${API_URL}/management/v1/actions" \
     -H "Authorization: Bearer ${PAT}" \
     -H "Content-Type: application/json" \
     -H "x-zitadel-orgid: ${ORG_ID}" \
     -d '{
-        "name": "Map roles claim",
-        "script": "function mapRoles(ctx, api) { if (ctx.v1.claims[\"urn:zitadel:iam:org:project:roles\"]) { var projectRoles = ctx.v1.claims[\"urn:zitadel:iam:org:project:roles\"]; var roles = Object.keys(projectRoles); api.v1.claims.setClaim(\"roles\", roles); } }",
+        "name": "add-roles-claim",
+        "script": "function addRoles(ctx, api) { if (ctx.v1.claims[\"urn:zitadel:iam:org:project:roles\"]) { var projectRoles = ctx.v1.claims[\"urn:zitadel:iam:org:project:roles\"]; var roles = Object.keys(projectRoles); api.v1.claims.setClaim(\"roles\", roles); } }",
         "timeout": "10s",
         "allowedToFail": false
     }')
 
-echo "Action response: $ACTION_RESPONSE"
+ACTION_ID=$(echo "$ACTION_CREATE" | jq -r '.id // empty')
+
+if [ -n "$ACTION_ID" ]; then
+    echo "Action created with ID: $ACTION_ID"
+
+    # Bind action to complement token flow
+    echo "Binding action to token flow..."
+    curl -s -X POST "${API_URL}/management/v1/flows/2/trigger/4/actions" \
+        -H "Authorization: Bearer ${PAT}" \
+        -H "Content-Type: application/json" \
+        -H "x-zitadel-orgid: ${ORG_ID}" \
+        -d "{
+            \"actionId\": \"${ACTION_ID}\"
+        }"
+
+    echo "Action bound to token complement flow"
+else
+    echo "WARNING: Could not create action"
+fi
 
 echo "Provisioning complete!"
