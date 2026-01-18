@@ -145,7 +145,7 @@ services:
       - --user-id-claim=sub
       - --pass-access-token=true
       - --set-authorization-header=true
-      - --scope=openid profile email
+      - --scope=openid profile email roles
       - --whitelist-domain=localhost:8080
     depends_on:
       - pm

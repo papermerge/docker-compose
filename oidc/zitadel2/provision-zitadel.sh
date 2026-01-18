@@ -100,7 +100,7 @@ else
         -H "x-zitadel-orgid: ${ORG_ID}" \
         -d '{
             "name": "Papermerge",
-            "projectRoleAssertion": false,
+            "projectRoleAssertion": true,
             "projectRoleCheck": false
         }')
 
@@ -113,6 +113,42 @@ else
         exit 1
     fi
     echo "Project created with ID: $PROJECT_ID"
+fi
+
+# Create 'admin' role in the project
+echo "Checking if 'admin' role exists..."
+ROLES_RESPONSE=$(curl -s -X POST "${API_URL}/management/v1/projects/${PROJECT_ID}/roles/_search" \
+    -H "Authorization: Bearer ${PAT}" \
+    -H "Content-Type: application/json" \
+    -H "x-zitadel-orgid: ${ORG_ID}" \
+    -d '{
+        "queries": [
+            {
+                "keyQuery": {
+                    "key": "admin",
+                    "method": "TEXT_QUERY_METHOD_EQUALS"
+                }
+            }
+        ]
+    }')
+
+ROLE_KEY=$(echo "$ROLES_RESPONSE" | jq -r '.result[0].key // empty')
+
+if [ -n "$ROLE_KEY" ]; then
+    echo "Role 'admin' already exists"
+else
+    echo "Creating 'admin' role..."
+    ROLE_CREATE_RESPONSE=$(curl -s -X POST "${API_URL}/management/v1/projects/${PROJECT_ID}/roles" \
+        -H "Authorization: Bearer ${PAT}" \
+        -H "Content-Type: application/json" \
+        -H "x-zitadel-orgid: ${ORG_ID}" \
+        -d '{
+            "roleKey": "admin",
+            "displayName": "Administrator",
+            "group": ""
+        }')
+    
+    echo "Role create response: $ROLE_CREATE_RESPONSE"
 fi
 
 # Check if application already exists
@@ -226,5 +262,77 @@ EOF
 
     echo "Credentials written to zitadel-credentials.env"
 fi
+
+# Grant admin role to root user
+echo "Finding root user..."
+USERS_RESPONSE=$(curl -s -X POST "${API_URL}/management/v1/users/_search" \
+    -H "Authorization: Bearer ${PAT}" \
+    -H "Content-Type: application/json" \
+    -H "x-zitadel-orgid: ${ORG_ID}" \
+    -d '{
+        "queries": [
+            {
+                "userNameQuery": {
+                    "userName": "root@my-organization.localhost",
+                    "method": "TEXT_QUERY_METHOD_EQUALS"
+                }
+            }
+        ]
+    }')
+
+USER_ID=$(echo "$USERS_RESPONSE" | jq -r '.result[0].id // empty')
+
+if [ -n "$USER_ID" ]; then
+    echo "Root user ID: $USER_ID"
+
+    # Check if user already has the grant
+    USER_GRANTS=$(curl -s -X POST "${API_URL}/management/v1/users/${USER_ID}/grants/_search" \
+        -H "Authorization: Bearer ${PAT}" \
+        -H "Content-Type: application/json" \
+        -H "x-zitadel-orgid: ${ORG_ID}" \
+        -d "{
+            \"queries\": [
+                {
+                    \"projectIdQuery\": {
+                        \"projectId\": \"${PROJECT_ID}\"
+                    }
+                }
+            ]
+        }")
+
+    GRANT_ID=$(echo "$USER_GRANTS" | jq -r '.result[0].id // empty')
+
+    if [ -n "$GRANT_ID" ]; then
+        echo "User already has grant to project"
+    else
+        echo "Granting admin role to root user..."
+        USER_GRANT_RESPONSE=$(curl -s -X POST "${API_URL}/management/v1/users/${USER_ID}/grants" \
+            -H "Authorization: Bearer ${PAT}" \
+            -H "Content-Type: application/json" \
+            -H "x-zitadel-orgid: ${ORG_ID}" \
+            -d "{
+                \"projectId\": \"${PROJECT_ID}\",
+                \"roleKeys\": [\"admin\"]
+            }")
+
+        echo "User grant response: $USER_GRANT_RESPONSE"
+    fi
+else
+    echo "WARNING: Could not find root user to grant admin role"
+fi
+
+echo "Creating token action to map roles..."
+ACTION_RESPONSE=$(curl -s -X POST "${API_URL}/management/v1/actions" \
+    -H "Authorization: Bearer ${PAT}" \
+    -H "Content-Type: application/json" \
+    -H "x-zitadel-orgid: ${ORG_ID}" \
+    -d '{
+        "name": "Map roles claim",
+        "script": "function mapRoles(ctx, api) { if (ctx.v1.claims[\"urn:zitadel:iam:org:project:roles\"]) { var projectRoles = ctx.v1.claims[\"urn:zitadel:iam:org:project:roles\"]; var roles = Object.keys(projectRoles); api.v1.claims.setClaim(\"roles\", roles); } }",
+        "timeout": "10s",
+        "allowedToFail": false
+    }')
+
+echo "Action response: $ACTION_RESPONSE"
 
 echo "Provisioning complete!"
