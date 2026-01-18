@@ -100,8 +100,8 @@ else
         -H "x-zitadel-orgid: ${ORG_ID}" \
         -d '{
             "name": "Papermerge",
-            "projectRoleAssertion": true,
-            "projectRoleCheck": true
+            "projectRoleAssertion": false,
+            "projectRoleCheck": false
         }')
 
     echo "Project create response: $PROJECT_CREATE_RESPONSE"
