@@ -1,0 +1,88 @@
+services:
+  db:
+    restart: unless-stopped
+    image: postgres:17
+    environment:
+      PGUSER: postgres
+      POSTGRES_DB: pmdb
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - pg_isready
+      - -d
+      - pmdb
+      - -U
+      - postgres
+      interval: 10s
+      timeout: 30s
+      retries: 5
+      start_period: 20s
+    networks:
+      - pm
+    ports:
+      - 5432:5432
+    volumes:
+      - 'data:/var/lib/postgresql/data:rw'
+  proxy:
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.14.0
+    restart: unless-stopped
+    networks:
+      - pm
+    ports:
+      - 8081:4180
+    command:
+      - --http-address=0.0.0.0:4180
+      - --upstream=http://pm:80
+      # Use EntraID OIDC provider
+      - --provider=oidc
+      - --provider-display-name=EntraID
+      - --oidc-issuer-url=https://login.microsoftonline.com/${ENTRA_TENANT_ID}/v2.0
+      - --client-id=${ENTRA_CLIENT_ID}
+      - --client-secret=${ENTRA_CLIENT_SECRET}
+      - --redirect-url=http://localhost:8081/oauth2/callback
+      # Allow all email domains (adjust as needed)
+      - --email-domain=*
+      # Cookie configuration
+      - --cookie-secret=${OAUTH2_COOKIE_SECRET}
+      - --cookie-secure=false
+      - --cookie-name=_oauth2_proxy
+      # Skip provider selection button (go directly to EntraID)
+      - --skip-provider-button=true
+      # Use 'sub' claim as user ID (EntraID recommendation)
+      - --user-id-claim=sub
+      # Pass access token to upstream (Papermerge)
+      - --pass-access-token=true
+      - --set-authorization-header=true
+      # Request necessary scopes
+      - --scope=openid profile email
+      # Whitelist domains for logout redirects
+      - --whitelist-domain=localhost:8081
+    depends_on:
+      - pm
+    environment:
+      # These can also be set via command line args above
+      OAUTH2_PROXY_COOKIE_SECRET: ${OAUTH2_COOKIE_SECRET}
+  pm:
+    image: papermerge/papermerge:3.6.0a16-oidc
+    restart: unless-stopped
+    environment:
+      PM_DB_URL: postgresql://postgres:postgres@db:5432/pmdb
+      # OIDC Logout Configuration for EntraID
+      PM_OIDC_LOGOUT_URL: https://login.microsoftonline.com/${ENTRA_TENANT_ID}/oauth2/v2.0/logout
+      PM_POST_LOGOUT_REDIRECT_URI: http://localhost:8081
+      PM_OIDC_CLIENT_ID: ${ENTRA_CLIENT_ID}
+    volumes:
+      - papermerge_media:/app/media
+    networks:
+      - pm
+    depends_on:
+      db:
+        condition: service_healthy
+
+networks:
+  pm:
+
+volumes:
+  data:
+  papermerge_media:
