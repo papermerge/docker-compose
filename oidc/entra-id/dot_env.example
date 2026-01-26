@@ -1,0 +1,8 @@
+# Rename this file to `.env`
+
+ENTRA_TENANT_ID=
+ENTRA_CLIENT_ID=
+ENTRA_CLIENT_SECRET=
+
+# `openssl rand -base64 32 | head -c 32`
+OAUTH2_COOKIE_SECRET=
